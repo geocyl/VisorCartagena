@@ -119,7 +119,7 @@
         const props = feature.properties;
         const marker = L.marker([coords[1], coords[0]]).addTo(map);
         if (props && props.name) {
-          marker.bindPopup(`<b>${props.name}</b>`);
+          marker.bindPopup(`<b>${props.Name}</b>`);
         }
       });
     }
