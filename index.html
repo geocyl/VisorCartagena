@@ -50,6 +50,33 @@
       margin: 2px 0;
       cursor: pointer;
     }
+    #mapTitle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1200;
+  text-align: center;
+}
+#mapTitle span {
+  font-weight: normal;
+  font-size: 13px;
+  color: #555;
+}
+body.dark-mode #mapTitle {
+  background: rgba(34, 34, 34, 0.85);
+  color: #eee;
+}
+body.dark-mode #mapTitle span {
+  color: #ccc;
+}
     /* Botones personalizados */
     .custom-button {
       background: white;
