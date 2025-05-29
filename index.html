@@ -84,6 +84,72 @@
         .catch(error => console.error('Error cargando Puntos2.json:', error));
     })
     .catch(error => console.error('Error cargando Cartagena.json:', error));
+
+   // --- BOTONES MODO OSCURO Y UBICACIÓN ---
+
+    const controlsDiv = document.getElementById('customControls');
+
+    // Botón modo oscuro
+    const darkModeBtn = document.createElement('button');
+    darkModeBtn.className = 'custom-button';
+    darkModeBtn.title = 'Modo oscuro/claro';
+    darkModeBtn.innerHTML = '🌓';
+
+    // Botón ubicación con seguimiento en vivo
+    let locationMarker = null;
+    let locating = false;
+
+    const geoBtn = document.createElement('button');
+    geoBtn.className = 'custom-button';
+    geoBtn.title = 'Mostrar/Ocultar mi ubicación';
+    geoBtn.innerHTML = '📍';
+
+    darkModeBtn.onclick = () => {
+      document.body.classList.toggle('dark-mode');
+
+      if (map.hasLayer(currentBaseLayer)) {
+        map.removeLayer(currentBaseLayer);
+      }
+      if (document.body.classList.contains('dark-mode')) {
+        currentBaseLayer = baseLayers["Mapa oscuro"];
+      } else {
+        currentBaseLayer = baseLayers["OpenStreetMap"];
+      }
+      currentBaseLayer.addTo(map);
+    };
+
+    geoBtn.onclick = () => {
+      if (!locating) {
+        locating = true;
+        geoBtn.style.background = '#cce5ff'; // indicar activo
+        map.locate({ setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true });
+      } else {
+        locating = false;
+        geoBtn.style.background = 'white';
+        if (locationMarker) {
+          map.removeLayer(locationMarker);
+          locationMarker = null;
+        }
+        map.stopLocate();
+      }
+    };
+
+    controlsDiv.appendChild(darkModeBtn);
+    controlsDiv.appendChild(geoBtn);
+
+    // Actualizar posición en vivo
+    map.on('locationfound', function(e) {
+      if (locationMarker) map.removeLayer(locationMarker);
+
+      locationMarker = L.marker(e.latlng).addTo(map)
+        .bindPopup("Estás aquí").openPopup();
+    });
+
+    map.on('locationerror', function(e) {
+      alert("Error al obtener la ubicación: " + e.message);
+      locating = false;
+      geoBtn.style.background = 'white';
+    });
 </script>
 </body>
 </html>
