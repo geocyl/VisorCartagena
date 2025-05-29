@@ -113,16 +113,19 @@
 
     L.control.layers(baseLayers).addTo(map);
 
-    function renderPoints(pointsData) {
-      pointsData.features.forEach(feature => {
-        const coords = feature.geometry.coordinates;
-        const props = feature.properties;
-        const marker = L.marker([coords[1], coords[0]]).addTo(map);
-        if (props && props.name) {
-          marker.bindPopup(`<b>${props.Name}</b>`);
-        }
-      });
-    }
+ // Renderizar puntos
+    function renderPoints(data) {
+      data.features.forEach(feature => {
+        const cat = Number(feature.properties.Categoria);
+        const marker = L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+          radius: 6,
+          fillColor: getColorByCategoria(cat),
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).bindPopup(${feature.properties.Name || "Sin nombre"});
+
 
     fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
       .then(response => response.json())
