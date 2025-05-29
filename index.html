@@ -194,7 +194,7 @@
         }).addTo(map);
         map.fitBounds(municipioLayer.getBounds());
 
-        fetch('https://raw.githubusercontent.com/ivanmt-gis/CotoGEOCyL/refs/heads/main/Puntos.json')
+        fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
           .then(response => response.json())
           .then(data => renderPoints(data));
       });
