@@ -89,12 +89,10 @@
       background: #121212;
       color: #eee;
     }
-
     body.dark-mode #mapTitle {
       background: rgba(34, 34, 34, 0.85);
       color: #eee;
     }
-
     body.dark-mode .legend {
       background: rgba(34, 34, 34, 0.85);
       color: #eee;
@@ -105,7 +103,10 @@
   <div id="map"></div>
   <div id="mapTitle">Visor cartográfico Cartagena<br><span>Destino Gastronómico</span></div>
   <div class="custom-controls" id="customControls"></div>
-  <div class="legend" id="mapLegend"></div>
+  <div id="mapLegend" class="legend">
+    <div id="legendHeader" style="cursor:pointer; font-weight:bold; margin-bottom:6px;">Categorías ⯆</div>
+    <div id="legendContent"></div>
+  </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
@@ -136,6 +137,25 @@
 
     L.control.layers(baseLayers).addTo(map);
     let currentBaseLayer = baseLayers["OpenStreetMap"];
+
+    const homeView = {
+      center: [0, 0],
+      zoom: 2
+    };
+
+    L.Control.ResetView = L.Control.extend({
+      onAdd: function () {
+        const btn = L.DomUtil.create('button', 'custom-button');
+        btn.title = "Vista inicial";
+        btn.innerHTML = '⌂';
+        btn.style.marginTop = '42px';
+        btn.onclick = () => map.setView(homeView.center, homeView.zoom);
+        return btn;
+      },
+      onRemove: function () {}
+    });
+    L.control.resetView = function(opts) { return new L.Control.ResetView(opts); };
+    L.control.resetView({ position: 'topleft' }).addTo(map);
 
     const categoryColors = {
       1: "#e41a1c",
@@ -168,8 +188,8 @@
     }
 
     function renderLegend() {
-      const legend = document.getElementById("mapLegend");
-      legend.innerHTML = "<b>Categorías</b><br>";
+      const legendContent = document.getElementById("legendContent");
+      legendContent.innerHTML = "";
 
       for (let i = 1; i <= 9; i++) {
         const item = document.createElement("div");
@@ -197,8 +217,16 @@
         item.appendChild(colorBox);
         item.appendChild(label);
 
-        legend.appendChild(item);
+        legendContent.appendChild(item);
       }
+
+      const legendHeader = document.getElementById("legendHeader");
+      let collapsed = false;
+      legendHeader.onclick = () => {
+        collapsed = !collapsed;
+        legendContent.style.display = collapsed ? "none" : "block";
+        legendHeader.innerHTML = `Categorías ${collapsed ? "⯈" : "⯆"}`;
+      };
     }
 
     function renderPoints(data) {
@@ -243,16 +271,16 @@
         }).addTo(map);
 
         map.fitBounds(municipioLayer.getBounds());
+        homeView.center = municipioLayer.getBounds().getCenter();
+        homeView.zoom = map.getZoom();
 
         fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
           .then(response => response.json())
           .then(pointsData => {
             renderPoints(pointsData);
             renderLegend();
-          })
-          .catch(error => console.error('Error cargando Puntos2.json:', error));
-      })
-      .catch(error => console.error('Error cargando Cartagena.json:', error));
+          });
+      });
 
     const controlsDiv = document.getElementById('customControls');
 
@@ -297,8 +325,7 @@
 
     map.on('locationfound', function(e) {
       if (locationMarker) map.removeLayer(locationMarker);
-      locationMarker = L.marker(e.latlng).addTo(map)
-        .bindPopup("Estás aquí").openPopup();
+      locationMarker = L.marker(e.latlng).addTo(map).bindPopup("Estás aquí").openPopup();
     });
 
     map.on('locationerror', function(e) {
@@ -309,7 +336,6 @@
   </script>
 </body>
 </html>
-
 
 
 
