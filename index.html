@@ -185,14 +185,6 @@
       }
     }
 
-    fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
-      .then(response => response.json())
-      .then(data => {
-        const municipioLayer = L.geoJSON(data, {
-          style: { color: "red", weight: 4, fillOpacity: 0 },
-          interactive: false
-        }).addTo(map);
-        map.fitBounds(municipioLayer.getBounds());
 
         fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
           .then(response => response.json())
