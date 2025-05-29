@@ -36,14 +36,15 @@
       font-size: 13px;
       color: #555;
     }
-    body.dark-mode #mapTitle {
-      background: rgba(34, 34, 34, 0.85);
-      color: #eee;
+    .custom-controls {
+      position: absolute;
+      top: 80px;
+      right: 10px;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
-    body.dark-mode #mapTitle span {
-      color: #ccc;
-    }
-
     .custom-button {
       background: white;
       border: none;
@@ -59,43 +60,38 @@
       line-height: 28px;
       user-select: none;
     }
-    .custom-button:hover {
-      background: #f0f0f0;
-    }
-    .custom-controls {
-      position: absolute;
-      top: 80px;
-      right: 10px;
-      z-index: 1100;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
 
     .legend {
       position: absolute;
       bottom: 20px;
       left: 10px;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       padding: 10px;
       border-radius: 8px;
       font-family: Arial, sans-serif;
       font-size: 13px;
-      line-height: 18px;
       box-shadow: 0 0 5px rgba(0,0,0,0.3);
       z-index: 1100;
     }
-
-    .legend i {
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .legend-item i {
       width: 14px;
       height: 14px;
-      float: left;
-      margin-right: 8px;
-      opacity: 0.9;
+      margin-right: 6px;
+      display: inline-block;
     }
 
     body.dark-mode {
       background: #121212;
+      color: #eee;
+    }
+
+    body.dark-mode #mapTitle {
+      background: rgba(34, 34, 34, 0.85);
       color: #eee;
     }
 
@@ -138,8 +134,8 @@
       zoom: 2
     });
 
-    let currentBaseLayer = baseLayers["OpenStreetMap"];
     L.control.layers(baseLayers).addTo(map);
+    let currentBaseLayer = baseLayers["OpenStreetMap"];
 
     const categoryColors = {
       1: "#e41a1c",
@@ -154,16 +150,18 @@
     };
 
     const categoryLabels = {
-      1: "Restaurante",
-      2: "Bar",
-      3: "Mercado",
-      4: "Tienda local",
-      5: "Café",
-      6: "Panadería",
-      7: "Puesto callejero",
-      8: "Heladería",
-      9: "Otro"
+      1: "Mercado",
+      2: "Hostelería",
+      3: "Quesería",
+      4: "Alimentación/Panadería",
+      5: "Bodega",
+      6: "Otros servicios",
+      7: "Museo",
+      8: "Centro comercial"
+      9: "Lugares de interés turístico"
     };
+
+    const categoryLayers = {};
 
     function getColorByCategoria(cat) {
       return categoryColors[cat] || "#ccc";
@@ -172,13 +170,42 @@
     function renderLegend() {
       const legend = document.getElementById("mapLegend");
       legend.innerHTML = "<b>Categorías</b><br>";
+
       for (let i = 1; i <= 9; i++) {
-        legend.innerHTML +=
-          `<i style="background:${getColorByCategoria(i)}"></i>${categoryLabels[i]}<br>`;
+        const item = document.createElement("div");
+        item.className = "legend-item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.dataset.cat = i;
+        checkbox.onchange = function () {
+          const cat = Number(this.dataset.cat);
+          if (this.checked) {
+            categoryLayers[cat]?.addTo(map);
+          } else {
+            map.removeLayer(categoryLayers[cat]);
+          }
+        };
+
+        const colorBox = document.createElement("i");
+        colorBox.style.background = getColorByCategoria(i);
+
+        const label = document.createTextNode(categoryLabels[i]);
+
+        item.appendChild(checkbox);
+        item.appendChild(colorBox);
+        item.appendChild(label);
+
+        legend.appendChild(item);
       }
     }
 
     function renderPoints(data) {
+      for (let i = 1; i <= 9; i++) {
+        categoryLayers[i] = L.layerGroup();
+      }
+
       data.features.forEach(feature => {
         const coords = feature.geometry.coordinates;
         const props = feature.properties;
@@ -193,8 +220,14 @@
           fillOpacity: 0.8
         }).bindPopup(`<b>${props.Name || "Sin nombre"}</b>`);
 
-        marker.addTo(map);
+        if (categoryLayers[cat]) {
+          marker.addTo(categoryLayers[cat]);
+        }
       });
+
+      for (let i = 1; i <= 9; i++) {
+        categoryLayers[i].addTo(map);
+      }
     }
 
     fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
