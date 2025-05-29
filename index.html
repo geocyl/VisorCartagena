@@ -6,8 +6,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
-    #map { height: 100%; width: 100%; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+     #mapTitle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1200;
+  text-align: center;
+}
+#mapTitle span {
+  font-weight: normal;
+  font-size: 13px;
+  color: #555;
+}
+body.dark-mode #mapTitle {
+  background: rgba(34, 34, 34, 0.85);
+  color: #eee;
+}
+body.dark-mode #mapTitle span {
+  color: #ccc;
+}
+    /* Botones personalizados */
+    .custom-button {
+      background: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      margin-bottom: 5px;
+      width: 36px;
+      height: 36px;
+      text-align: center;
+      line-height: 28px;
+      user-select: none;
+    }
+    .custom-button:hover {
+      background: #f0f0f0;
+    }
+    /* Contenedor para botones personalizados debajo capas base */
+    .custom-controls {
+      position: absolute;
+      top: 80px;  /* debajo del control capas base que está ~10px top + ~70px altura capas */
+      right: 10px;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    /* Modos oscuro y claro */
+    body.dark-mode {
+      background: #121212;
+      color: #eee;
+    }
+    body.dark-mode .legend {
+      background: #222;
+      color: #eee;
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+    body.dark-mode .legend h4 {
+      color: #ccc;
+    }
+    body.dark-mode .legend label {
+      color: #ddd;
+    }
+    body.dark-mode .legend i {
+      opacity: 1;
+      border: 1px solid #555;
+    }
+
+    
   </style>
 </head>
 <body>
