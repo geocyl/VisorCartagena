@@ -1,69 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Destino Gastronómico Cartagena</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
-    #map { height: 100%; width: 100%; }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
+<script>
+  // Capas base
+  const baseLayers = {
+    "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }),
+    "Mapa gris claro": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
+    }),
+    "Mapa oscuro": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
+    }),
+    "Imagen satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri'
+    })
+  };
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    // Capas base
-    const baseLayers = {
-      "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }),
-      "Mapa gris claro": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
-      }),
-      "Mapa oscuro": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
-      }),
-      "Imagen satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Tiles &copy; Esri'
-      })
-    };
+  // Crear el mapa
+  const map = L.map('map', {
+    layers: [baseLayers["OpenStreetMap"]],
+    center: [0, 0],
+    zoom: 2
+  });
 
-    // Crear el mapa
-    const map = L.map('map', {
-      layers: [baseLayers["OpenStreetMap"]],
-      center: [0, 0],
-      zoom: 2
+  // Control de capas base
+  L.control.layers(baseLayers).addTo(map);
+
+  // Función para renderizar puntos en el mapa
+  function renderPoints(pointsData) {
+    // Aquí asumo que pointsData es un GeoJSON o similar con features o un array con objetos que tienen lat y lng
+    pointsData.features.forEach(feature => {
+      const coords = feature.geometry.coordinates; // [lng, lat]
+      const props = feature.properties;
+
+      const marker = L.marker([coords[1], coords[0]]).addTo(map);
+
+      // Si quieres, un popup con alguna propiedad
+      if(props && props.name) {
+        marker.bindPopup(`<b>${props.name}</b>`);
+      }
     });
+  }
 
-    // Control de capas base
-    L.control.layers(baseLayers).addTo(map);
+  // Cargar límite del municipio
+  fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
+    .then(response => response.json())
+    .then(data => {
+      const municipioLayer = L.geoJSON(data, {
+        style: {
+          color: "red",
+          weight: 4,
+          fillOpacity: 0
+        },
+        interactive: false
+      }).addTo(map);
 
-    // Cargar límite del municipio
-    fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
-      .then(response => response.json())
-      .then(data => {
-        const municipioLayer = L.geoJSON(data, {
-          style: {
-            color: "blue",
-            weight: 8,
-            fillOpacity: 0
-          },
-          interactive: false
-        }).addTo(map);
+      // Ajustar la vista a los límites del municipio
+      map.fitBounds(municipioLayer.getBounds());
 
-        map.fitBounds(municipioLayer.getBounds());
-      })
-      .catch(error => console.error('Error cargando Cartagena.json:', error));
-  </script>
-</body>
-</html>
+      // Cargar puntos y mostrarlos en el mapa
+      fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
+        .then(response => response.json())
+        .then(pointsData => renderPoints(pointsData))
+        .catch(error => console.error('Error cargando Puntos2.json:', error));
+    })
+    .catch(error => console.error('Error cargando Cartagena.json:', error));
+</script>
+
 
 
 
