@@ -16,34 +16,34 @@
       height: 100%;
       width: 100%;
     }
-     #mapTitle {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.85);
-  padding: 6px 16px;
-  border-radius: 8px;
-  font-family: 'Arial', sans-serif;
-  font-size: 16px;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  z-index: 1200;
-  text-align: center;
-}
-#mapTitle span {
-  font-weight: normal;
-  font-size: 13px;
-  color: #555;
-}
-body.dark-mode #mapTitle {
-  background: rgba(34, 34, 34, 0.85);
-  color: #eee;
-}
-body.dark-mode #mapTitle span {
-  color: #ccc;
-}
-    /* Botones personalizados */
+    #mapTitle {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-family: 'Arial', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1200;
+      text-align: center;
+    }
+    #mapTitle span {
+      font-weight: normal;
+      font-size: 13px;
+      color: #555;
+    }
+    body.dark-mode #mapTitle {
+      background: rgba(34, 34, 34, 0.85);
+      color: #eee;
+    }
+    body.dark-mode #mapTitle span {
+      color: #ccc;
+    }
+
     .custom-button {
       background: white;
       border: none;
@@ -62,155 +62,123 @@ body.dark-mode #mapTitle span {
     .custom-button:hover {
       background: #f0f0f0;
     }
-    /* Contenedor para botones personalizados debajo capas base */
     .custom-controls {
       position: absolute;
-      top: 80px;  /* debajo del control capas base que está ~10px top + ~70px altura capas */
+      top: 80px;
       right: 10px;
       z-index: 1100;
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
-    /* Modos oscuro y claro */
     body.dark-mode {
       background: #121212;
       color: #eee;
     }
-    body.dark-mode .legend {
-      background: #222;
-      color: #eee;
-      box-shadow: 0 0 15px rgba(255,255,255,0.2);
-    }
-    body.dark-mode .legend h4 {
-      color: #ccc;
-    }
-    body.dark-mode .legend label {
-      color: #ddd;
-    }
-    body.dark-mode .legend i {
-      opacity: 1;
-      border: 1px solid #555;
-    }
-
-    
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="mapTitle">Visor cartográfico Cartagena<br><span>Destino Gastronómico</span></div>
-  <!-- Aquí ponemos los botones personalizados -->
   <div class="custom-controls" id="customControls"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-  // Capas base
-  const baseLayers = {
-    "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }),
-    "Mapa gris claro": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
-    }),
-    "Mapa oscuro": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
-    }),
-    "Imagen satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: 'Tiles &copy; Esri'
-    })
-  };
+  <script>
+    const baseLayers = {
+      "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }),
+      "Mapa gris claro": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
+      }),
+      "Mapa oscuro": L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://carto.com/">CartoDB</a>'
+      }),
+      "Imagen satélite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri'
+      })
+    };
 
-  // Crear el mapa
-  const map = L.map('map', {
-    layers: [baseLayers["OpenStreetMap"]],
-    center: [0, 0],
-    zoom: 2
-  });
-
-  // Control de capas base
-  L.control.layers(baseLayers).addTo(map);
-
-  // Función para renderizar puntos en el mapa
-  function renderPoints(pointsData) {
-    // Aquí asumo que pointsData es un GeoJSON o similar con features o un array con objetos que tienen lat y lng
-    pointsData.features.forEach(feature => {
-      const coords = feature.geometry.coordinates; // [lng, lat]
-      const props = feature.properties;
-
-      const marker = L.marker([coords[1], coords[0]]).addTo(map);
-
-      // Si quieres, un popup con alguna propiedad
-      if(props && props.name) {
-        marker.bindPopup(`<b>${props.name}</b>`);
-      }
+    const map = L.map('map', {
+      layers: [baseLayers["OpenStreetMap"]],
+      center: [0, 0],
+      zoom: 2
     });
-  }
 
-  // Cargar límite del municipio
-  fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
-    .then(response => response.json())
-    .then(data => {
-      const municipioLayer = L.geoJSON(data, {
-        style: {
-          color: "red",
-          weight: 4,
-          fillOpacity: 0
-        },
-        interactive: false
-      }).addTo(map);
+    let currentBaseLayer = baseLayers["OpenStreetMap"];
 
-      // Ajustar la vista a los límites del municipio
-      map.fitBounds(municipioLayer.getBounds());
+    L.control.layers(baseLayers).addTo(map);
 
-      // Cargar puntos y mostrarlos en el mapa
-      fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
-        .then(response => response.json())
-        .then(pointsData => renderPoints(pointsData))
-        .catch(error => console.error('Error cargando Puntos2.json:', error));
-    })
-    .catch(error => console.error('Error cargando Cartagena.json:', error));
+    function renderPoints(pointsData) {
+      pointsData.features.forEach(feature => {
+        const coords = feature.geometry.coordinates;
+        const props = feature.properties;
+        const marker = L.marker([coords[1], coords[0]]).addTo(map);
+        if (props && props.name) {
+          marker.bindPopup(`<b>${props.name}</b>`);
+        }
+      });
+    }
 
-   // --- BOTONES MODO OSCURO Y UBICACIÓN ---
+    fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
+      .then(response => response.json())
+      .then(data => {
+        const municipioLayer = L.geoJSON(data, {
+          style: {
+            color: "red",
+            weight: 4,
+            fillOpacity: 0
+          },
+          interactive: false
+        }).addTo(map);
+
+        map.fitBounds(municipioLayer.getBounds());
+
+        fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
+          .then(response => response.json())
+          .then(pointsData => renderPoints(pointsData))
+          .catch(error => console.error('Error cargando Puntos2.json:', error));
+      })
+      .catch(error => console.error('Error cargando Cartagena.json:', error));
 
     const controlsDiv = document.getElementById('customControls');
 
-    // Botón modo oscuro
     const darkModeBtn = document.createElement('button');
     darkModeBtn.className = 'custom-button';
     darkModeBtn.title = 'Modo oscuro/claro';
     darkModeBtn.innerHTML = '🌓';
-
-    // Botón ubicación con seguimiento en vivo
-    let locationMarker = null;
-    let locating = false;
 
     const geoBtn = document.createElement('button');
     geoBtn.className = 'custom-button';
     geoBtn.title = 'Mostrar/Ocultar mi ubicación';
     geoBtn.innerHTML = '📍';
 
+    controlsDiv.appendChild(darkModeBtn);
+    controlsDiv.appendChild(geoBtn);
+
     darkModeBtn.onclick = () => {
       document.body.classList.toggle('dark-mode');
 
-      if (map.hasLayer(currentBaseLayer)) {
-        map.removeLayer(currentBaseLayer);
-      }
+      map.removeLayer(currentBaseLayer);
       if (document.body.classList.contains('dark-mode')) {
         currentBaseLayer = baseLayers["Mapa oscuro"];
       } else {
         currentBaseLayer = baseLayers["OpenStreetMap"];
       }
-      currentBaseLayer.addTo(map);
+      map.addLayer(currentBaseLayer);
     };
+
+    let locationMarker = null;
+    let locating = false;
 
     geoBtn.onclick = () => {
       if (!locating) {
         locating = true;
-        geoBtn.style.background = '#cce5ff'; // indicar activo
+        geoBtn.style.background = '#cce5ff';
         map.locate({ setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true });
       } else {
         locating = false;
@@ -223,10 +191,6 @@ body.dark-mode #mapTitle span {
       }
     };
 
-    controlsDiv.appendChild(darkModeBtn);
-    controlsDiv.appendChild(geoBtn);
-
-    // Actualizar posición en vivo
     map.on('locationfound', function(e) {
       if (locationMarker) map.removeLayer(locationMarker);
 
@@ -239,7 +203,7 @@ body.dark-mode #mapTitle span {
       locating = false;
       geoBtn.style.background = 'white';
     });
-</script>
+  </script>
 </body>
 </html>
 
