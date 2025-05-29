@@ -205,7 +205,7 @@ body.dark-mode #mapTitle span {
           weight: 1,
           opacity: 1,
           fillOpacity: 0.8
-        }).bindPopup(`<strong>Nombre:</strong> ${feature.properties.Name || "Sin nombre"}`);
+        }).bindPopup(`${feature.properties.Name || "Sin nombre"}`);
 
         if (!markersByCategory[cat]) {
           markersByCategory[cat] = L.layerGroup();
