@@ -71,8 +71,36 @@
       flex-direction: column;
       gap: 5px;
     }
+
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      line-height: 18px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      z-index: 1100;
+    }
+
+    .legend i {
+      width: 14px;
+      height: 14px;
+      float: left;
+      margin-right: 8px;
+      opacity: 0.9;
+    }
+
     body.dark-mode {
       background: #121212;
+      color: #eee;
+    }
+
+    body.dark-mode .legend {
+      background: rgba(34, 34, 34, 0.85);
       color: #eee;
     }
   </style>
@@ -81,6 +109,7 @@
   <div id="map"></div>
   <div id="mapTitle">Visor cartográfico Cartagena<br><span>Destino Gastronómico</span></div>
   <div class="custom-controls" id="customControls"></div>
+  <div class="legend" id="mapLegend"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
@@ -110,22 +139,63 @@
     });
 
     let currentBaseLayer = baseLayers["OpenStreetMap"];
-
     L.control.layers(baseLayers).addTo(map);
 
- // Renderizar puntos
+    const categoryColors = {
+      1: "#e41a1c",
+      2: "#377eb8",
+      3: "#4daf4a",
+      4: "#984ea3",
+      5: "#ff7f00",
+      6: "#ffff33",
+      7: "#a65628",
+      8: "#f781bf",
+      9: "#999999"
+    };
+
+    const categoryLabels = {
+      1: "Restaurante",
+      2: "Bar",
+      3: "Mercado",
+      4: "Tienda local",
+      5: "Café",
+      6: "Panadería",
+      7: "Puesto callejero",
+      8: "Heladería",
+      9: "Otro"
+    };
+
+    function getColorByCategoria(cat) {
+      return categoryColors[cat] || "#ccc";
+    }
+
+    function renderLegend() {
+      const legend = document.getElementById("mapLegend");
+      legend.innerHTML = "<b>Categorías</b><br>";
+      for (let i = 1; i <= 9; i++) {
+        legend.innerHTML +=
+          `<i style="background:${getColorByCategoria(i)}"></i>${categoryLabels[i]}<br>`;
+      }
+    }
+
     function renderPoints(data) {
       data.features.forEach(feature => {
-        const cat = Number(feature.properties.Categoria);
-        const marker = L.circleMarker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], {
+        const coords = feature.geometry.coordinates;
+        const props = feature.properties;
+        const cat = Number(props.Categoria);
+
+        const marker = L.circleMarker([coords[1], coords[0]], {
           radius: 6,
           fillColor: getColorByCategoria(cat),
           color: "#000",
           weight: 1,
           opacity: 1,
           fillOpacity: 0.8
-        }).bindPopup(${feature.properties.Name || "Sin nombre"});
+        }).bindPopup(`<b>${props.Name || "Sin nombre"}</b>`);
 
+        marker.addTo(map);
+      });
+    }
 
     fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
       .then(response => response.json())
@@ -143,7 +213,10 @@
 
         fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Puntos2.json')
           .then(response => response.json())
-          .then(pointsData => renderPoints(pointsData))
+          .then(pointsData => {
+            renderPoints(pointsData);
+            renderLegend();
+          })
           .catch(error => console.error('Error cargando Puntos2.json:', error));
       })
       .catch(error => console.error('Error cargando Cartagena.json:', error));
@@ -165,13 +238,8 @@
 
     darkModeBtn.onclick = () => {
       document.body.classList.toggle('dark-mode');
-
       map.removeLayer(currentBaseLayer);
-      if (document.body.classList.contains('dark-mode')) {
-        currentBaseLayer = baseLayers["Mapa oscuro"];
-      } else {
-        currentBaseLayer = baseLayers["OpenStreetMap"];
-      }
+      currentBaseLayer = document.body.classList.contains('dark-mode') ? baseLayers["Mapa oscuro"] : baseLayers["OpenStreetMap"];
       map.addLayer(currentBaseLayer);
     };
 
@@ -196,7 +264,6 @@
 
     map.on('locationfound', function(e) {
       if (locationMarker) map.removeLayer(locationMarker);
-
       locationMarker = L.marker(e.latlng).addTo(map)
         .bindPopup("Estás aquí").openPopup();
     });
@@ -209,10 +276,6 @@
   </script>
 </body>
 </html>
-
-
-
-
 
 
 
