@@ -185,7 +185,7 @@
       }
     }
 
-    fetch('https://raw.githubusercontent.com/ivanmt-gis/CotoGEOCyL/refs/heads/main/Cartagena.json')
+    fetch('https://raw.githubusercontent.com/geocyl/VisorCartagena/refs/heads/main/Cartagena.json')
       .then(response => response.json())
       .then(data => {
         const municipioLayer = L.geoJSON(data, {
